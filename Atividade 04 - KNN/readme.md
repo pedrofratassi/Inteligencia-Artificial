@@ -1,62 +1,49 @@
 
-# Relátorio do KNN no database do Titanic
+# Relatório do KNN no Dataset da Flor de Íris
 
-Este relatório descreve a aplicação do método KNN (K-Nearest Neighbors) no conjunto de dados do Titanic. O objetivo é construir um modelo preditivo para identificar se um passageiro sobreviveu ou não, com base nas características disponíveis, como classe do passageiro, idade, número de familiares a bordo, entre outros.
+Este relatório descreve a aplicação do método KNN (K-Nearest Neighbors) no conjunto de dados da Flor de Íris. O objetivo é construir um modelo preditivo para classificar as espécies de íris (Setosa, Versicolor, ou Virginica) com base nas medidas de sépalas e pétalas.
 
 <h2>O que é KNN?</h2>
-O K-Nearest Neighbors (KNN) é um algoritmo de aprendizado supervisionado amplamente utilizado para tarefas de classificação e regressão. Ele se baseia na ideia de que exemplos semelhantes estão próximos uns dos outros no espaço de características. Para classificar um novo ponto, o KNN verifica os k vizinhos mais próximos ao ponto e atribui a ele a classe mais comum entre esses vizinhos. No caso do Titanic, isso significa que, para prever se um passageiro sobreviveu ou não, o modelo usa os dados de passageiros semelhantes para fazer essa previsão.
-
-O algoritmo KNN não faz suposições sobre a distribuição dos dados, o que o torna muito flexível e fácil de usar. No entanto, ele pode ser sensível à escala das variáveis, o que exige a normalização dos dados para evitar que variáveis com maior magnitude dominem a distância.
-
+O K-Nearest Neighbors (KNN) é um algoritmo de aprendizado supervisionado amplamente utilizado para tarefas de classificação e regressão. Ele baseia-se na ideia de que exemplos semelhantes estão próximos uns dos outros no espaço de características. Para classificar um novo ponto, o KNN verifica os k vizinhos mais próximos ao ponto e atribui a ele a classe mais comum entre esses vizinhos.<br>
+<br>
+No caso do dataset da Flor de Íris, queremos prever a espécie da flor (Setosa, Versicolor ou Virginica) usando as medidas das sépalas e pétalas. Como o KNN é sensível à escala das variáveis, normalizamos os dados para garantir que todas as variáveis influenciem igualmente o cálculo da distância.
 
 ## Melhorias
 
-Nesta versão da base de dados do Titanic, foi adicionado o algoritmo KNN, com o objetivo de avaliar sua performance na tarefa de predição de sobrevivência. O modelo foi testado com diferentes valores para o parâmetro k (número de vizinhos), e a eficácia do modelo foi analisada com as principais métricas de avaliação, como a matriz de confusão e a curva ROC.
+Nesta versão do modelo de classificação, foi implementado o algoritmo KNN, visando avaliar sua performance na tarefa de classificação multiclasse. O modelo foi testado com diferentes valores de k (número de vizinhos), e a eficácia foi analisada com as principais métricas de avaliação, como a matriz de confusão e a curva ROC para problemas multiclasse.
 
 
 ## Funcionalidades Acrescentadas 
 
 __Carregar os Dados e Definir X e y__<br>
-Primeiro passo é carregar os dados e selecionar as variáveis (features) que você deseja usar no modelo. A variável alvo (y) será Survived, que indica se um passageiro sobreviveu ou não.
+O primeiro passo é carregar o conjunto de dados e selecionar as variáveis (features) que serão utilizadas para o modelo. A variável alvo (y) será a espécie da flor.
 
 ```markdown
-# Definindo os valor para as colunas 'X' e 'y'
-X = titanic[['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Sex']]  # Features escolhidas
-y = titanic['Survived']  # Variável alvo
-
-# Convertendo as variáveis categóricas em numéricas
-X = pd.get_dummies(X, drop_first=True)  # Converte 'Sex' para valores numérico
+from sklearn.datasets import load_iris
+iris = load_iris()
+X = iris.data  # Features: medidas de sépalas e pétalas
+y = iris.target  # Variável alvo: espécie da flor
 ```
-
-__Legenda:__ 
-
-- __X:__ As features selecionadas para o modelo (ex: classe do passageiro, idade, número de irmãos/cônjuges a bordo, etc.).
-
-- __y:__ A variável que queremos prever (sobrevivência).
-
-- __pd.get_dummies():__ Converte a variável categórica 'Sex' (masculino/feminino) em valores numéricos.
 
 <br>
 
 __Dividir os Dados em Treino e Teste__<br>
-Após preparar os dados, eles são divididos em conjuntos de treino e teste. O treino será usado para ajustar o modelo, e o teste para avaliar sua performance.
+Após preparar os dados, eles são divididos em conjuntos de treino e teste. O conjunto de treino será usado para ajustar o modelo, e o teste para avaliar seu desempenho.
 
 ```markdown
-# Dividindo os dados em Treino e Teste
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 ```
 
 __Explicação:__<br>
-- __train_test_split:__ Divide os dados em um conjunto de treino (80%) e teste (20%). O parâmetro random_state=42 garante que a divisão seja sempre a mesma quando você repetir a execução.
+- __train_test_split:__ Divide os dados em um conjunto de treino (80%) e de teste (20%). A opção random_state=42 garante que a divisão seja sempre a mesma ao repetir a execução.
 
 <br>
 
 __Normalização dos Dados__<br>
-O KNN é sensível à escala das variáveis, então, é importante normalizar as features para que todas fiquem na mesma faixa de valores.
+O KNN é sensível à escala das variáveis, então é importante normalizar os dados para que todas as features fiquem na mesma faixa de valores.
 
 ```markdown
-# Normalização dos dados
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
@@ -64,26 +51,25 @@ X_test = scaler.transform(X_test)
 ```
 __Explicação:__<br>
 
-- __StandardScaler:__ Transforma as features para que tenham média 0 e desvio padrão 1. Isso é importante para evitar que variáveis com magnitudes maiores dominem as distâncias calculadas pelo KNN.
+- __StandardScaler:__ Transforma os dados para que cada feature tenha média 0 e desvio padrão 1. Isso é essencial para garantir que todas as variáveis contribuam igualmente para a distância calculada pelo KNN.
 
 <br>
 
 __Treinar o Modelo KNN__<br>
-Aqui cria o modelo de K-Nearest Neighbors e o treina com os dados normalizados.
+Aqui, criamos o modelo de K-Nearest Neighbors e o treinamos com os dados normalizados.
 
 ```markdown
-# Treinando o KNN
 from sklearn.neighbors import KNeighborsClassifier
-knn = KNeighborsClassifier(n_neighbors=5)  # Define 5 vizinhos como valor inicial para k
+knn = KNeighborsClassifier(n_neighbors=5)  # Usando 5 vizinhos para iniciar o modelo
 knn.fit(X_train, y_train)
 ```
 __Explicação:__<br>
-- __KNeighborsClassifier:__ Este é o algoritmo KNN da scikit-learn. O parâmetro n_neighbors=5 define o número de vizinhos mais próximos que serão usados para classificar um ponto. O valor de k pode ser ajustado conforme necessário
+- __KNeighborsClassifier:__ O algoritmo KNN da biblioteca scikit-learn. O parâmetro n_neighbors=5 define que serão usados os 5 vizinhos mais próximos para classificar um ponto.
 
 <br>
 
 __Fazer Previsões__<br>
-Com o modelo treinado, você pode fazer previsões sobre o conjunto de teste.
+Com o modelo treinado, podemos realizar previsões sobre o conjunto de teste.
 
 ```markdown
 # Fazendo as previsões
@@ -91,7 +77,7 @@ y_pred = knn.predict(X_test)
 ```
 
 __Explicação:__<br>
-- __predict():__ O método predict usa o modelo treinado para prever os rótulos (Survived) no conjunto de teste.
+- __predict():__ O método usa o modelo treinado para prever as classes (espécies) no conjunto de teste.
 
 <br>
 
@@ -99,86 +85,71 @@ __Matriz de Confusão__<br>
 A matriz de confusão mostra como o modelo está classificando os dados, separando verdadeiros positivos, verdadeiros negativos, falsos positivos e falsos negativos.
 
 ```markdown
-# Matriz de confusão
+from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
 
 # Visualizando a matriz de confusão
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-plt.xlabel('Prevista')
+plt.xlabel('Previsto')
 plt.ylabel('Real')
-plt.title('Matrix de Confusão')
+plt.title('Matriz de Confusão - Flor de Íris')
 plt.show()
 ```
 
 __Explicação:__<br>
-- __Matriz de Confusão:__ Uma visualização que compara os rótulos reais com as previsões feitas pelo modelo, mostrando os erros e acertos. Isso ajuda a identificar se o modelo está confundindo as classes.
+- __Matriz de Confusão:__ A matriz de confusão permite visualizar a performance do modelo na classificação de cada uma das três espécies de flores.
 
 <br>
 
 __Curva ROC e AUC__<br>
-A curva ROC mostra a relação entre a taxa de verdadeiros positivos e falsos positivos para diferentes limiares de decisão. O AUC indica a performance geral do modelo.
+A curva ROC mostra a relação entre a taxa de verdadeiros positivos e falsos positivos para diferentes limiares de decisão. O AUC indica a performance geral do modelo. Como este é um problema multiclasse, utilizamos o método "one vs rest".
 
 ```markdown
-# Prever as probabilidades
-y_prob = knn.predict_proba(X_test)[:, 1]
+from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import roc_curve
 
-# Calcula a curva ROC
-fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+# Binarizando as classes para problemas multiclasse
+y_test_bin = label_binarize(y_test, classes=[0, 1, 2])
+y_prob = knn.predict_proba(X_test)
 
-# Plotando a curva ROC e AUC
-plt.plot(fpr, tpr, label=f'KNN (AUC = {roc_auc_score(y_test, y_prob):.2f})')
-plt.plot([0, 1], [0, 1], linestyle='--')  # Linha diagonal de referência
-plt.xlabel('Taxa de falso positivo')
-plt.ylabel('Taxa Verdadeiramente Positiva')
-plt.title('Curva ROC')
-plt.legend()
+# Calculando a curva ROC para cada classe
+fpr, tpr, _ = roc_curve(y_test_bin.ravel(), y_prob.ravel())
+plt.plot(fpr, tpr)
+plt.title('Curva ROC - Flor de Íris')
 plt.show()
+
+# AUC para classificação multiclasse
+roc_auc_score(y_test_bin, y_prob, multi_class='ovr')
 ```
 
 __Explicação:__<br>
-- __Curva ROC:__ Visualiza a capacidade do modelo de distinguir entre classes. Quanto mais próxima a curva estiver do canto superior esquerdo, melhor será a performance do modelo.
-
-- __AUC (Area Under the Curve):__ Mede a área sob a curva ROC; quanto mais próximo de 1, melhor o desempenho.
-
-<br>
-
-__Histograma da Distribuição de Classes__<br>
-Esse gráfico mostra a distribuição das classes no conjunto de teste, ajudando a entender se há algum desequilíbrio nas classes.
-
-```markdown
-# Histograma da Distribuição de Classes
-sns.countplot(x=y_test)
-plt.title('Distribuição de Classes no Conjunto de Teste')
-plt.show()
-```
-
-__Explicação:__<br>
-- __Histograma de Distribuição:__ Mostra o número de instâncias de cada classe (0 = não sobreviveu, 1 = sobreviveu), o que é importante para avaliar possíveis desbalanceamentos no dataset.
+- __label_binarize:__ Transforma as classes em uma forma binária para calcular a ROC para problemas multiclasse.
 
 <br>
 
 __Ajuste de Parâmetros do KNN__<br>
-O valor de k (número de vizinhos) pode impactar muito o desempenho do modelo. Experimente variar k e observar como isso afeta os resultados.
+O valor de k (número de vizinhos) pode impactar o desempenho do modelo. Aqui, experimentamos variar k para observar como isso afeta a acurácia.
 
 ```markdown
 # Testa diferentes valores de k
 for k in range(1, 11):
     knn = KNeighborsClassifier(n_neighbors=k)
     knn.fit(X_train, y_train)
-    print(f'k={k}, Test Accuracy: {knn.score(X_test, y_test):.2f}')
+    print(f'k={k}, Acurácia no Teste: {knn.score(X_test, y_test):.2f}')
 ```
 
 __Explicação:__<br>
-- __Variação de k:__ Testa diferentes valores de k para encontrar o melhor número de vizinhos para o modelo KNN.
+- __Variação de k:__ Este laço testa diferentes valores de k para encontrar o número ideal de vizinhos que maximize a performance do modelo.
+
 ## Conclusão
 
-O processo de implementação do KNN no dataset Titanic envolveu várias etapas críticas. Inicialmente, os dados foram preparados e divididos em conjuntos de treino e teste. Em seguida, o modelo KNN foi treinado com as variáveis escolhidas e normalizado para garantir que todas as features tivessem o mesmo peso na análise.
+A aplicação do KNN no dataset da Flor de Íris foi bem-sucedida e envolveu várias etapas críticas. O modelo foi treinado com diferentes valores de k para avaliar seu impacto na performance. Utilizamos a matriz de confusão para avaliar a eficácia da classificação e visualizamos a curva ROC para verificar o desempenho em problemas multiclasse.
 
-Após treinar o modelo, utilizamos a matriz de confusão para avaliar a eficácia da classificação, observando os acertos e erros. Além disso, a curva ROC nos deu uma visão clara da capacidade do modelo em distinguir entre as classes, com a métrica AUC fornecendo uma avaliação numérica da performance.
-
-Por fim, testamos diferentes valores de k, ajustando o número de vizinhos, e observamos o impacto dessa variação no desempenho do modelo. Essa análise foi essencial para encontrar o valor de k ideal.
-
-Com esse processo, conseguimos construir um modelo de KNN robusto para prever a sobrevivência dos passageiros do Titanic, demonstrando como o KNN pode ser uma técnica eficaz em problemas de classificação binária. No entanto, é importante ressaltar que o desempenho do modelo pode ser melhorado com a otimização de parâmetros e o uso de outras técnicas de pré-processamento.
+O KNN mostrou-se uma técnica robusta para a classificação das espécies de íris, especialmente após a normalização dos dados, o que garantiu uma contribuição equitativa de todas as variáveis no cálculo das distâncias.
 
 ## Autores
 
